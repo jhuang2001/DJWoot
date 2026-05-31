@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-S", ".",
+        "-B", "build",
+        "-DCMAKE_BUILD_TYPE=Debug"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "detail": "Configure CMake with Debug build type"
+    },
+    {
+      "label": "CMake: build-windows",
+      "type": "shell",
+      "command": "./build.sh",
+      "args": [
+        "-w"
+      ],
+      "group": "build",
+      "dependsOn": "CMake: configure Debug",
+      "problemMatcher": ["$gcc"],
+      "detail": "Build the project in build/"
+    }
+  ]
+}
