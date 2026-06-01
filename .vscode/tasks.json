@@ -28,6 +28,18 @@
       "dependsOn": "CMake: configure Debug",
       "problemMatcher": ["$gcc"],
       "detail": "Build the project in build/"
+    },
+    {
+      "label": "CMake: build-boid-visualizer",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build", "build-windows", "--config", "Debug", "--target", "boid_visualizer"
+      ],
+      "group": "build",
+      "dependsOn": "CMake: build-windows",
+      "problemMatcher": ["$gcc"],
+      "detail": "Build the boid_visualizer target"
     }
   ]
 }

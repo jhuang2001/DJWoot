@@ -82,12 +82,20 @@ else()
     message(FATAL_ERROR "Unsupported platform. Project only supports Windows and Unix-like systems")
 endif()
 
-target_sources(main PRIVATE src/main.cpp)
+file(GLOB ALGO_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/*.cpp"
+)
 
-target_include_directories(main PRIVATE ${WOOTING_RGB_SDK_INCLUDE_DIR} ${WOOTING_ANALOG_SDK_INCLUDE_DIR})
+target_sources(main PRIVATE src/main.cpp ${ALGO_SOURCES})
+
+target_include_directories(main PRIVATE ${WOOTING_RGB_SDK_INCLUDE_DIR} ${WOOTING_ANALOG_SDK_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src/algorithms)
+
 target_link_libraries(main PRIVATE ${WOOTING_RGB_SDK_LIBRARY} ${HIDAPI_LIBRARY})
 
 # TODO: Workaround for static linking on Windows, allow for cross compilation from WSL
 if(WIN32)
     target_link_options(main PRIVATE -static-libgcc -static-libstdc++)
 endif()
+
+# Separate visualization subproject
+add_subdirectory(src/visualizations)
