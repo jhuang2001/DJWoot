@@ -2,19 +2,22 @@
 
 ## Build and run
 
-### Linux
+### WSL cross compile for Windows
+
+```bash
+./build.sh -w
+./build-windows/main.exe
+```
+
+### Linux (WIP)
 
 ```bash
 ./build.sh
 ./build/main
 ```
 
-### Windows
+### TODO: Bazel cross compilation
 
-```bash
-./build.sh -w
-./build-windows/main.exe
-```
 
 # Credits
 

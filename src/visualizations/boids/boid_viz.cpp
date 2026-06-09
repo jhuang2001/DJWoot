@@ -2,9 +2,9 @@
 #include <cmath>
 #include <chrono>
 #include <iostream>
-#include "../algorithms/flock.h"
-#include "../algorithms/boid.h"
-#include "../algorithms/vector2.h"
+#include "../../algorithms/boids/flock.h"
+#include "../../algorithms/boids/boid.h"
+#include "../../algorithms/boids/vector2.h"
 
 const int WINDOW_WIDTH = 1500;
 const int WINDOW_HEIGHT = 600;

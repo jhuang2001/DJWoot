@@ -17,6 +17,8 @@ struct Vector2 {
     Vector2& operator-=(const Vector2& rhs) { x -= rhs.x; y -= rhs.y; return *this; }
     Vector2& operator*=(float scalar) { x *= scalar; y *= scalar; return *this; }
     Vector2& operator/=(float scalar) { x /= scalar; y /= scalar; return *this; }
+    
+    bool operator<(const Vector2& rhs) const { return ((x < rhs.x) || (x == rhs.x && y < rhs.y)); }
 
     float length() const;
     float lengthSquared() const;

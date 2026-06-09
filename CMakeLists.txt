@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(DJWoot LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -10,7 +10,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_executable(main)
+add_subdirectory(src/algorithms/boids)
+add_subdirectory(src/algorithms/water)
+
+if(WIN32)
+    add_executable(boids
+        src/boids.cpp
+    )
+endif()
 
 # TODO: Remove hardcoded paths and use find_package (current workaround used for WSL paths)
 if(WIN32)
@@ -22,10 +29,10 @@ if(WIN32)
         NAMES hidapi.dll libhidapi.dll libhidapi-0.dll
         PATHS ${HIDAPI_LIBRARY_DIR}
     )
-    add_custom_command(TARGET main POST_BUILD
+    add_custom_command(TARGET boids POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${HIDAPI_DLL}
-            $<TARGET_FILE_DIR:main>
+            $<TARGET_FILE_DIR:boids>
     )
 
     set(WOOTING_RGB_SDK_INCLUDE_DIR
@@ -41,10 +48,10 @@ if(WIN32)
     set(RGB_SDK_DLL
         ${CMAKE_SOURCE_DIR}/external-windows/wooting-rgb-sdk/wooting-rgb-sdk64.dll
     )
-    add_custom_command(TARGET main POST_BUILD
+    add_custom_command(TARGET boids POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${RGB_SDK_DLL}
-            $<TARGET_FILE_DIR:main>
+            $<TARGET_FILE_DIR:boids>
     )
     set(WOOTING_ANALOG_SDK_LIBRARY
         ${CMAKE_SOURCE_DIR}/external-windows/wooting-analog-sdk/wooting_analog_sdk_dist.dll.lib
@@ -52,10 +59,10 @@ if(WIN32)
     set(ANALOG_SDK_DLL
         ${CMAKE_SOURCE_DIR}/external-windows/wooting-analog-sdk/wooting_analog_sdk_dist.dll
     )
-    add_custom_command(TARGET main POST_BUILD
+    add_custom_command(TARGET boids POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${ANALOG_SDK_DLL}
-            $<TARGET_FILE_DIR:main>
+            $<TARGET_FILE_DIR:boids>
     )
 
 elseif(UNIX)
@@ -82,20 +89,46 @@ else()
     message(FATAL_ERROR "Unsupported platform. Project only supports Windows and Unix-like systems")
 endif()
 
-file(GLOB ALGO_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/algorithms/*.cpp"
-)
-
-target_sources(main PRIVATE src/main.cpp ${ALGO_SOURCES})
-
-target_include_directories(main PRIVATE ${WOOTING_RGB_SDK_INCLUDE_DIR} ${WOOTING_ANALOG_SDK_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src/algorithms)
-
-target_link_libraries(main PRIVATE ${WOOTING_RGB_SDK_LIBRARY} ${HIDAPI_LIBRARY})
-
-# TODO: Workaround for static linking on Windows, allow for cross compilation from WSL
 if(WIN32)
-    target_link_options(main PRIVATE -static-libgcc -static-libstdc++)
-endif()
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libgcc_s_seh-1.dll
+        OUTPUT_VARIABLE MINGW_LIBGCC_S_DLL
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libstdc++-6.dll
+        OUTPUT_VARIABLE MINGW_LIBSTDCXX_DLL
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libwinpthread-1.dll
+        OUTPUT_VARIABLE MINGW_LIBWINPTHREAD_DLL
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
-# Separate visualization subproject
-add_subdirectory(src/visualizations)
+    add_custom_command(TARGET boids POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${MINGW_LIBGCC_S_DLL}
+            ${MINGW_LIBSTDCXX_DLL}
+            ${MINGW_LIBWINPTHREAD_DLL}
+            $<TARGET_FILE_DIR:boids>
+    )
+
+    target_include_directories(boids PRIVATE ${WOOTING_RGB_SDK_INCLUDE_DIR} ${WOOTING_ANALOG_SDK_INCLUDE_DIR})
+
+    target_compile_definitions(boids PRIVATE ANALOGSDK_EXPORTS)
+
+    target_link_libraries(boids PRIVATE
+        boids_algorithm
+        water_algorithm
+        ${WOOTING_RGB_SDK_LIBRARY}
+        ${WOOTING_ANALOG_SDK_LIBRARY}
+        ${HIDAPI_LIBRARY}
+    )
+
+    # TODO: Workaround for static linking on Windows, allow for cross compilation from WSL
+    target_link_options(boids PRIVATE -static-libgcc -static-libstdc++)
+
+    # Separate visualization subproject
+    add_subdirectory(src/visualizations/boids)
+endif()

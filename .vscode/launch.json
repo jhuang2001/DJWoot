@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug main (Linux)",
+      "name": "Debug boids (Linux)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/main",
+      "program": "${workspaceFolder}/build/boids",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -23,10 +23,10 @@
       ]
     },
     {
-      "name": "Debug main (Windows)",
+      "name": "Debug boids (Windows)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}\\build-windows\\main.exe",
+      "program": "${workspaceFolder}\\build-windows\\boids.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
